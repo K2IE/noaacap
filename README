@@ -1,3 +1,8 @@
+TL;DR -- To download the latest .deb package:
+https://github.com/K2DLS/noaacap/wiki/noaacap
+
+ABOUT NOAACAP
+
 This software is written in python 2.7 and has been tested with aprx 2.9.x.
 If you are running a version < 2.9.0 you should first update aprx.  The current
 release may be found at http://thelifeofkenneth.com/aprx/debs/.
