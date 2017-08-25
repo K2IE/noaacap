@@ -1,0 +1,47 @@
+This software is written in python 2.7 and has been tested with aprx 2.9.x.
+If you are running a version < 2.9.0 you should first update aprx.  The current
+release may be found at http://thelifeofkenneth.com/aprx/debs/.
+
+Once you are running aprx >= 2.9, install noaacap:
+
+Install via sudo dpkg -i noaacap-0.1.1.deb.  Then, to satisfy the dependencies,
+run sudo apt-get -f install.
+
+CONFIGURATION
+
+Add a beacon section similar to the following to /etc/aprx.conf:
+
+<beacon>
+
+beaconmode both
+cycle-size 2m
+
+beacon via WIDE2-1 \
+   srccall N0CALL-13 \
+   exec /usr/local/bin/noaacap.py
+
+</beacon>
+
+The program will check for a new alert or update every 2 minutes, but only
+send if there is a change.
+
+Edit /etc/noaacap.conf:
+
+Do not remove the [noaacap] section header.
+
+myTZ should be set to the Linux TZ value for the issuing office of your
+preferred weather zone.  For a complete list of timezones, you may use
+the following command:  timedatectl list-timezones | grep America.
+
+myZone should be set to the zone number.  A list of zones may be found at
+https://alerts.weather.gov/.  Only list one zone.  You could use a county code
+rather than a zone code if you wish.
+
+USE
+
+It would be good to hear from users of this software.  Please email
+k2dls@k2dls.net with the callsign-SSID of your APRS station that is sending
+weather alerts via this program.
+
+Dan Srebnick, K2DLS
+08/19/2017
