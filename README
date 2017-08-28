@@ -40,7 +40,7 @@ the following command:  timedatectl list-timezones | grep America.
 
 myZone should be set to your county code.  A list of county codes may be found
 at https://alerts.weather.gov/.  Only list one county.  The program will then
-send the alert for all affected zones.  You could also use a zone code if
+send the alert for all affected zones.  You could instead use a zone code if
 you want to be more specific.
 
 USE
