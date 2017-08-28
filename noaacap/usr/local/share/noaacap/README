@@ -33,9 +33,10 @@ myTZ should be set to the Linux TZ value for the issuing office of your
 preferred weather zone.  For a complete list of timezones, you may use
 the following command:  timedatectl list-timezones | grep America.
 
-myZone should be set to the zone number.  A list of zones may be found at
-https://alerts.weather.gov/.  Only list one zone.  You could use a county code
-rather than a zone code if you wish.
+myZone should be set to your county code.  A list of county codes may be found
+at https://alerts.weather.gov/.  Only list one county.  The program will then
+send the alert for all affected zones.  You could also use a zone code if
+you want to be more specific, but you may information relevant to your area.
 
 USE
 
