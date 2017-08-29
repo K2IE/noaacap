@@ -9,7 +9,7 @@ release may be found at http://thelifeofkenneth.com/aprx/debs/.
 
 Once you are running aprx >= 2.9, install noaacap:
 
-Install via sudo dpkg -i noaacap-0.1.1.deb.  Then, to satisfy the dependencies,
+Install via sudo dpkg -i noaacap-0.4.1.deb.  Then, to satisfy the dependencies,
 run sudo apt-get -f install.
 
 CONFIGURATION
