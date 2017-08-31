@@ -1,8 +1,10 @@
 #!/usr/bin/python
 
 ## Author:  Dan Srebnick, K2DLS
-## License: BSD-2-Clause (/usr/local/share/noaacap/license.txt)
+## License: BSD-2-Clause (/usr/local/share/noaacap/LICENSE)
 ## This program is called from aprx.
+##
+## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
 version = "0.5"
 

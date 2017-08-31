@@ -1,7 +1,7 @@
 noaacap changelog
 ##
 Version: 0.5
-Release: TBD
+Release: August 31, 2017
 Bug fix for long messages to ensure myZone is included
 Improve error handling for configuration errors
 Add -v command line switch to print version and copyright
@@ -9,7 +9,7 @@ Add -v command line switch to print version and copyright
 Version: 0.4
 Release: August 24, 2017
 Switched to compressed zcs to improve capacity
-Improved messsage + \n length check
+Improved messsage length check
 ##
 Version: 0.3
 Release: August 22, 2017
