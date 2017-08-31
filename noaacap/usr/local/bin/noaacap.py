@@ -1,29 +1,12 @@
 #!/usr/bin/python
 
 ## Author:  Dan Srebnick, K2DLS
-##
-## Version: 0.4
-## Release: August 24, 2017
-##	    Switched to compressed zcs to improve capacity
-##	    Improved messsage + \n length check
-##
-## Version: 0.3
-## Release: August 22, 2017
-## Changes: Implement NWS-CANCL messages, implement DB id consisting of
-##           Office + Phenomena + Significance + ETN 
-##
-## Version: 0.2
-## Release: August 19, 2017
-## Changes: Make sure message + \n does not exceed 67 chars
-##
-## Version: 0.1
-## Release: August 7, 2017
-##
 ## License: BSD-2-Clause (/usr/local/share/noaacap/license.txt)
-##
 ## This program is called from aprx.
 ##
+version = "0.5"
 
+import sys
 import pytz, datetime
 import string
 import requests
@@ -33,17 +16,36 @@ import os
 import ConfigParser
 import re
 
+if len(sys.argv) == 2 and sys.argv[1] == '-v':
+   print "noaacap.py by K2DLS, version " + version
+   print
+   print "A weather alert beacon exec for aprx >= 2.9"
+   print "Licensed under the BSD 2 Clause license"
+   print "Copyright 2017 by Daniel L. Srebnick"
+   print
+   exit(0)
+
+conffile = '/etc/noaacap.conf'
+
+if not os.path.isfile(conffile):
+   exit("\nError: " + conffile + " not found\n")
+
 config = ConfigParser.ConfigParser()
 
 try:
-   os.path.isfile('/etc/noaacap.conf')
+   config.read(conffile)
 except:
-   exit("\nError: /etc/noaacap.conf not found\n")
-else:
-   config.read('/etc/noaacap.conf')
+   exit("\nError: Check " + conffile + " for proper [noaacap] section heading\n")
 
-myTZ   = config.get('noaacap', 'myTZ')
-myZone = config.get('noaacap', 'myZone')
+try:
+   myTZ   = config.get('noaacap', 'myTZ')
+except:
+   exit("\nError: Check " + conffile + " for proper myTZ value in [noaacap] section\n")
+
+try:
+   myZone = config.get('noaacap', 'myZone')
+except:
+   exit("\nError: Check " + conffile + " for proper myZone value in [noaacap] section\n")
 
 def aprstime(timestr,TZ):
    local = pytz.timezone (TZ)
@@ -191,20 +193,22 @@ for i in range(0, count):
          event = "CANCL"
 
       hit = 1
-      suffix = exputc + "z," + type + "," + zcs + "{" + t + "00"
+      message = exputc + "z," + type + "," + zcs
 
-      # Make sure message does not exceed 67 chars (66 + newline)
-      # If it does, trim it.  Also be certain that myZone
-      # is included in the trimmed zcs.
-      while len(suffix) > 66:
-         if not myZone in parsezcs(zcs):
-            zcs = myZone + "-" + zcs
-            suffix = exputc + "z," + type + "," + zcs + "{" + t + "00"
+      # Make sure message does not exceed 67 chars.  If it
+      # does, trim it.  Also be certain that myZone is included
+      # included in the trimmed zcs.
+	
+      while len(message) > 67:
          n = zcs.rfind('-')
          zcs = zcs[0:n]
-         suffix = exputc + "z," + type + "," + zcs + "{" + t + "00"
-         
-      print ":NWS_" + event + ":" + suffix
+         message = exputc + "z," + type + "," + zcs
+         if not myZone in parsezcs(zcs):
+            zcs = myZone + "-" + zcs
+            message = exputc + "z," + type + "," + zcs
+
+      line = "{" + t + "00"
+      print ":NWS_" + event + ":" + message + line
     
       break
 
