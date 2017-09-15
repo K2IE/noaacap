@@ -1,5 +1,10 @@
 noaacap changelog
 ##
+Version: 0.6
+Release: September 15, 2017
+Converted to Python3
+Added systemd journal support for logging and debugging
+##
 Version: 0.5
 Release: August 31, 2017
 Bug fix for long messages to ensure myZone is included

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 ## Author:  Dan Srebnick, K2DLS
 ## License: BSD-2-Clause (/usr/local/share/noaacap/LICENSE)
@@ -6,49 +6,84 @@
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "0.5"
+version = "0.6"
 
 import sys
-import pytz, datetime
+import pytz
+import datetime
 import string
 import requests
 from bs4 import BeautifulSoup
-import bsddb
-import os
-import ConfigParser
+from bsddb3 import db
+from os import remove
+import os.path
+import configparser
 import re
+import logging
+from systemd.journal import JournalHandler
+
+log = logging.getLogger('noaacap')
+log.addHandler(JournalHandler(SYSLOG_IDENTIFIER='noaacap'))
+log.setLevel(logging.INFO)
+log.info("Starting")
 
 if len(sys.argv) == 2 and sys.argv[1] == '-v':
-   print "noaacap.py by K2DLS, version " + version
-   print
-   print "A weather alert beacon exec for aprx >= 2.9"
-   print "Licensed under the BSD 2 Clause license"
-   print "Copyright 2017 by Daniel L. Srebnick"
-   print
+   print("noaacap.py by K2DLS, version " + version + "\n")
+   print("A weather alert beacon exec for aprx >= 2.9")
+   print("Licensed under the BSD 2 Clause license")
+   print("Copyright 2017 by Daniel L. Srebnick\n")
+   sys.exit(0)
+
+# We need this function early in execution
+def Exiting():
+   log.info("Exiting")
+   print()
    exit(0)
 
 conffile = '/etc/noaacap.conf'
 
 if not os.path.isfile(conffile):
-   exit("\nError: " + conffile + " not found\n")
+   log.error(conffile + " not found")
+   Exiting()
 
-config = ConfigParser.ConfigParser()
+config = configparser.ConfigParser()
 
 try:
    config.read(conffile)
 except:
-   exit("\nError: Check " + conffile + " for proper [noaacap] section heading\n")
+   log.error("Check " + conffile + " for proper [noaacap] section heading")
+   Exiting()
 
 try:
    myTZ   = config.get('noaacap', 'myTZ')
 except:
-   exit("\nError: Check " + conffile + " for proper myTZ value in [noaacap] section\n")
+   log.error("Check " + conffile + " for proper myTZ value in [noaacap] section")
+   Exiting()
 
 try:
    myZone = config.get('noaacap', 'myZone')
 except:
-   exit("\nError: Check " + conffile + " for proper myZone value in [noaacap] section\n")
+   log.error("Check " + conffile + " for proper myZone value in [noaacap] section")
+   Exiting()
 
+url = 'https://alerts.weather.gov/cap/wwaatmget.php?x=' + myZone + '&y=0'
+
+r = requests.get(url)
+if r.status_code != 200:
+   log.error(str(r.status_code) + " " + url)
+   Exiting()
+
+soup = BeautifulSoup(r.text, 'xml')
+entries = soup.find_all('entry')
+count = len(entries)
+
+dbfile = '/dev/shm/noaacap.db'
+ppmap = '/usr/local/share/noaacap/ppmap.db'
+
+sg = {"W":"WARN ","A":"WATCH","Y":"ADVIS","S":"STMNT","F":"4CAST",
+     "O":"OUTLK","N":"SYNOP"}
+
+# Define functions used in the for loop
 def aprstime(timestr,TZ):
    local = pytz.timezone (TZ)
    naive = datetime.datetime.strptime(timestr, "%Y-%m-%dT%H:%M:%S")
@@ -107,22 +142,6 @@ def parsezcs(zcs):
       zonelist.add(prefix + zone)
    return zonelist
 
-sg = {"W":"WARN ","A":"WATCH","Y":"ADVIS","S":"STMNT","F":"4CAST",
-     "O":"OUTLK","N":"SYNOP"}
-
-url = 'https://alerts.weather.gov/cap/wwaatmget.php?x=' + myZone + '&y=0'
-try: 
-   r = requests.get(url)
-except:
-   exit('\n')
-
-soup = BeautifulSoup(r.text, 'xml')
-entries = soup.find_all('entry')
-count = len(entries)
-
-dbfile = '/dev/shm/noaacap.db'
-ppmap = '/usr/local/share/noaacap/ppmap.db'
-
 hit = 0
 for i in range(0, count):
 
@@ -132,10 +151,12 @@ for i in range(0, count):
       break
    else:
       if i == 0:
-         alerts = bsddb.hashopen(dbfile,'c')
-         pp     = bsddb.hashopen(ppmap,'r')
+          alerts = db.DB()
+          alerts.open(dbfile, None, db.DB_HASH, db.DB_CREATE)
+          pp = db.DB()
+          pp.open(ppmap, None, db.DB_HASH, db.DB_RDONLY)
 
-   updated = str(entries[i].updated.string)
+   updated = entries[i].updated.string
 
    if (entries[i].status.string == "Actual"):
 
@@ -144,15 +165,16 @@ for i in range(0, count):
       try:
          ProductClass, Action, Office, Phenomena, Significance, ETN, \
            EventBegin, EventEnd = vtecparse(VTEC['VTEC'].string)
-         if (ProductClass <> "/O"):		#Loop if not operational
+         if (ProductClass != "/O"):		#Loop if not operational
             continue
       except:
          continue				#Loop if error parsing P-VTEC
 
-      id = str(Office + Phenomena + Significance + ETN)
+      id = bytes(str(Office + Phenomena + Significance + ETN), 'utf-8')
 
       if alerts.has_key(id):
-         if alerts[id] == updated:
+         if alerts[id].decode('utf-8') == updated:
+            log.debug(id.decode('utf-8') + " " + updated + " found")
             continue
    
       alerts[id] = updated
@@ -176,10 +198,10 @@ for i in range(0, count):
             t = t + chr(s+61)
 
       # Pull specific alert to get compressed UGC zones
-      try:
-         rs = requests.get(entries[i].id.string)
-      except:
-         exit('\n')
+      rs = requests.get(entries[i].id.string)
+      if rs.status_code != 200:
+         log.error(str(rs.status_code) + " " + rs)
+         Exiting()
 
       soup2 = BeautifulSoup(rs.text, 'xml')
       parms = soup2.find_all('parameter')
@@ -188,19 +210,22 @@ for i in range(0, count):
          if parms[j].valueName.string == 'UGC':
             zcs = parms[j].value.string
 
-      type =  pp[str(Phenomena)]
-      event = sg[Significance]
+      type =  pp[bytes(Phenomena, 'utf-8')].decode('utf-8')
 
       if Action == "CAN":
          event = "CANCL"
+      else:
+         event = sg[Significance]
 
       hit = 1
       message = exputc + "z," + type + "," + zcs
+      log.info("Msg: " + message)
 
       # Make sure message does not exceed 67 chars.  If it
       # does, trim it.  Also be certain that myZone is included
       # included in the trimmed zcs.
 	
+      n = 0
       while len(message) > 67:
          n = zcs.rfind('-')
          zcs = zcs[0:n]
@@ -209,10 +234,15 @@ for i in range(0, count):
             zcs = myZone + "-" + zcs
             message = exputc + "z," + type + "," + zcs
 
+      if n > 0:
+         log.info("Truncated Msg: " + message)
+
       line = "{" + t + "00"
-      print ":NWS_" + event + ":" + message + line
+      print(":NWS_" + event + ":" + message + line)
     
       break
 
 if (hit == 0):
-   print
+   print()
+
+log.info("Exiting")
