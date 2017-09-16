@@ -25,7 +25,7 @@ beacon via WIDE2-1 \
 
 The timeout was needed on my older and slower single core Raspberry Pi Model B.
 The aprx default timeout is 10 seconds and the timeout may not be needed on a
-RPi 2 or newer.  If you need lots of "BEACON EXEC abnormal close" messages in
+RPi 2 or newer.  If you see lots of "BEACON EXEC abnormal close" messages in
 aprx.log, then you likely need to add the timeout.
 
 The program will check for a new alert or update every 2 minutes, but only
