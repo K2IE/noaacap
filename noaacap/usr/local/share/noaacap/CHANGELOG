@@ -1,5 +1,9 @@
 noaacap changelog
 ##
+Version: 0.7
+Release: TBD
+Added myResend parameter to control message resends.
+##
 Version: 0.6
 Release: September 15, 2017
 Converted to Python3

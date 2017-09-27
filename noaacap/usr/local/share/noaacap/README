@@ -44,6 +44,10 @@ at https://alerts.weather.gov/.  Only list one county.  The program will then
 send the alert for all affected zones.  You could instead use a zone code if
 you want to be more specific.
 
+myResend should be set to 0 for no message resends or to an interval of your
+choosing.  If noaacap beacons every 2 minutes, a value of 30 would provide
+hourly resends.
+
 USE
 
 It would be good to hear from users of this software.  Please email

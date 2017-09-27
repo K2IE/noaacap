@@ -6,7 +6,7 @@
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "0.6"
+version = "0.7"
 
 import sys
 import pytz
@@ -24,7 +24,7 @@ from systemd.journal import JournalHandler
 
 log = logging.getLogger('noaacap')
 log.addHandler(JournalHandler(SYSLOG_IDENTIFIER='noaacap'))
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 log.info("Starting")
 
 if len(sys.argv) == 2 and sys.argv[1] == '-v':
@@ -64,6 +64,14 @@ try:
    myZone = config.get('noaacap', 'myZone')
 except:
    log.error("Check " + conffile + " for proper myZone value in [noaacap] section")
+   Exiting()
+
+try:
+   myResend = int(config.get('noaacap', 'myResend'))
+except:
+   log.error("Check " + conffile + " for proper myResend value in [noaacap] section")
+   log.error("Try 0 (for no resend)")
+   log.error("or 30 (for 1h if beacon cycle-size 2m)")
    Exiting()
 
 url = 'https://alerts.weather.gov/cap/wwaatmget.php?x=' + myZone + '&y=0'
@@ -152,7 +160,10 @@ for i in range(0, count):
    else:
       if i == 0:
           alerts = db.DB()
-          alerts.open(dbfile, None, db.DB_HASH, db.DB_CREATE)
+          alerts.open(dbfile, "Alerts", db.DB_HASH, db.DB_CREATE)
+          if myResend > 0:
+             resend = db.DB()
+             resend.open(dbfile, "Resend", db.DB_HASH, db.DB_CREATE)
           pp = db.DB()
           pp.open(ppmap, None, db.DB_HASH, db.DB_RDONLY)
 
@@ -172,11 +183,28 @@ for i in range(0, count):
 
       id = bytes(str(Office + Phenomena + Significance + ETN), 'utf-8')
 
+      # Do we have this alert?
       if alerts.has_key(id):
+         # Is the updated time unchanged?
          if alerts[id].decode('utf-8') == updated:
             log.debug(id.decode('utf-8') + " " + updated + " found")
-            continue
-   
+            # Is resend behavoir desired?
+            if myResend > 0:
+
+               try:
+                  recount = int(resend[id].decode('utf-8')) - 1
+               except:
+                  resend[id] = bytes(str(myResend), 'utf-8')
+                  recount = int(resend[id].decode('utf-8')) - 1
+
+               if recount > 0:
+                  resend[id] = bytes(str(recount), 'utf-8')
+                  log.debug(id.decode('utf-8') + " resend in " + str(recount) +
+                     " iterations")
+                  continue
+            else:
+               continue
+
       alerts[id] = updated
 
       effutc = aprstime(entries[i].effective.string[0:-6],myTZ)
@@ -239,6 +267,8 @@ for i in range(0, count):
 
       line = "{" + t + "00"
       print(":NWS_" + event + ":" + message + line)
+      if myResend > 0:
+         resend[id] = bytes(str(myResend), 'utf-8')
     
       break
 
