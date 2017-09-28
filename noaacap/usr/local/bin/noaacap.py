@@ -24,7 +24,7 @@ from systemd.journal import JournalHandler
 
 log = logging.getLogger('noaacap')
 log.addHandler(JournalHandler(SYSLOG_IDENTIFIER='noaacap'))
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 log.info("Starting")
 
 if len(sys.argv) == 2 and sys.argv[1] == '-v':
