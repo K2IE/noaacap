@@ -36,6 +36,9 @@ aprx.log, then you likely need to add the timeout.
 The program will check for a new alert or update every 2 minutes, but only
 send if there is a change.
 
+For visibility into noaacap's actions via the systemd journal, you may add
+--info or --debug to the exec command line for more verbose logging.
+
 Edit /etc/noaacap.conf:
 
 Do not remove the [noaacap] section header.
@@ -60,4 +63,4 @@ k2dls@k2dls.net with the callsign-SSID of your APRS station that is sending
 weather alerts via this program.
 
 Dan Srebnick, K2DLS
-09/13/2017
+09/28/2017

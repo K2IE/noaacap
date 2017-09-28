@@ -24,15 +24,20 @@ from systemd.journal import JournalHandler
 
 log = logging.getLogger('noaacap')
 log.addHandler(JournalHandler(SYSLOG_IDENTIFIER='noaacap'))
-log.setLevel(logging.INFO)
-log.info("Starting")
 
-if len(sys.argv) == 2 and sys.argv[1] == '-v':
-   print("noaacap.py by K2DLS, version " + version + "\n")
-   print("A weather alert beacon exec for aprx >= 2.9")
-   print("Licensed under the BSD 2 Clause license")
-   print("Copyright 2017 by Daniel L. Srebnick\n")
-   sys.exit(0)
+if len(sys.argv) == 2:
+   if sys.argv[1] == '-v':
+      print("noaacap.py by K2DLS, version " + version + "\n")
+      print("A weather alert beacon exec for aprx >= 2.9")
+      print("Licensed under the BSD 2 Clause license")
+      print("Copyright 2017 by Daniel L. Srebnick\n")
+      sys.exit(0)
+   elif sys.argv[1] == "--info":
+      log.setLevel(logging.INFO)
+   elif sys.argv[1] == "--debug":
+      log.setLevel(logging.DEBUG)
+
+log.info("Starting")
 
 # We need this function early in execution
 def Exiting():
