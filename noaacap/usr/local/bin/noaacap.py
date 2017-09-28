@@ -25,23 +25,16 @@ from systemd.journal import JournalHandler
 log = logging.getLogger('noaacap')
 log.addHandler(JournalHandler(SYSLOG_IDENTIFIER='noaacap'))
 
-if len(sys.argv) == 2:
-   if sys.argv[1] == '-v':
-      print("noaacap.py by K2DLS, version " + version + "\n")
-      print("A weather alert beacon exec for aprx >= 2.9")
-      print("Licensed under the BSD 2 Clause license")
-      print("Copyright 2017 by Daniel L. Srebnick\n")
-      sys.exit(0)
-   elif sys.argv[1] == "--info":
-      log.setLevel(logging.INFO)
-   elif sys.argv[1] == "--debug":
-      log.setLevel(logging.DEBUG)
-
-log.info("Starting")
+if len(sys.argv) == 2 and sys.argv[1] == '-v':
+   print("noaacap.py by K2DLS, version " + version + "\n")
+   print("A weather alert beacon exec for aprx >= 2.9")
+   print("Licensed under the BSD 2 Clause license")
+   print("Copyright 2017 by Daniel L. Srebnick\n")
+   sys.exit(0)
 
 # We need this function early in execution
-def Exiting():
-   log.info("Exiting")
+def ErrExit():
+   log.error("Exiting")
    print()
    exit(0)
 
@@ -49,7 +42,7 @@ conffile = '/etc/noaacap.conf'
 
 if not os.path.isfile(conffile):
    log.error(conffile + " not found")
-   Exiting()
+   ErrExit()
 
 config = configparser.ConfigParser()
 
@@ -57,19 +50,32 @@ try:
    config.read(conffile)
 except:
    log.error("Check " + conffile + " for proper [noaacap] section heading")
-   Exiting()
+   ErrExit()
+
+try:
+   Logging = config.get('noaacap', 'Logging')
+except:
+   log.error("Check " + conffile + " for proper Logging value in [noaacap] section")
+   ErrExit()
+
+if Logging == '1':
+   log.setLevel(logging.INFO)
+elif Logging == '2':
+   log.setLevel(logging.DEBUG)
+
+log.info("Starting")
 
 try:
    myTZ   = config.get('noaacap', 'myTZ')
 except:
    log.error("Check " + conffile + " for proper myTZ value in [noaacap] section")
-   Exiting()
+   ErrExit()
 
 try:
    myZone = config.get('noaacap', 'myZone')
 except:
    log.error("Check " + conffile + " for proper myZone value in [noaacap] section")
-   Exiting()
+   ErrExit()
 
 try:
    myResend = int(config.get('noaacap', 'myResend'))
@@ -77,20 +83,20 @@ except:
    log.error("Check " + conffile + " for proper myResend value in [noaacap] section")
    log.error("Try 0 (for no resend)")
    log.error("or 30 (for 1h if beacon cycle-size 2m)")
-   Exiting()
+   ErrExit()
 
 url = 'https://alerts.weather.gov/cap/wwaatmget.php?x=' + myZone + '&y=0'
 
 r = requests.get(url)
 if r.status_code != 200:
    log.error(str(r.status_code) + " " + url)
-   Exiting()
+   ErrExit()
 
 soup = BeautifulSoup(r.text, 'xml')
 entries = soup.find_all('entry')
 count = len(entries)
 
-dbfile = '/dev/shm/noaacap.db'
+dbfile = '/dev/shm/noaaconf.db'
 ppmap = '/usr/local/share/noaacap/ppmap.db'
 
 sg = {"W":"WARN ","A":"WATCH","Y":"ADVIS","S":"STMNT","F":"4CAST",
@@ -234,7 +240,7 @@ for i in range(0, count):
       rs = requests.get(entries[i].id.string)
       if rs.status_code != 200:
          log.error(str(rs.status_code) + " " + rs)
-         Exiting()
+         ErrExit()
 
       soup2 = BeautifulSoup(rs.text, 'xml')
       parms = soup2.find_all('parameter')
@@ -281,3 +287,4 @@ if (hit == 0):
    print()
 
 log.info("Exiting")
+exit(0)

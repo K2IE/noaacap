@@ -1,7 +1,7 @@
 noaacap changelog
 ##
 Version: 0.7
-Release: TBD
+Release: September 28, 2017
 Added myResend parameter to control message resends.
 Added Logging parameter to control verbosity.
 ##
