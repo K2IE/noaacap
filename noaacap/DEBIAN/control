@@ -1,8 +1,8 @@
 Package: noaacap
-Version: 0.7
+Version: 0.7.1
 Section: hamradio
 Priority: extra
 Maintainer: Dan Srebnick <k2dls at k2dls.net>
 Architecture: all
-Depends: aprx (>=2.9), db-util, python-lxml, python-pip, python-bs4, python-tz
+Depends: aprx (>=2.9), db-util, python3-lxml, python3-pip, python3-bs4, python3-tz
 Description: APRS Weather Alerts beacon exec for aprx
