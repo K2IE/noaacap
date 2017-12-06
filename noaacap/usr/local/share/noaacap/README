@@ -8,7 +8,7 @@ https://github.com/K2DLS/noaacap/releases
 
 Once you are running aprx >= 2.9, install noaacap:
 
-Install via sudo dpkg -i noaacap-0.7.2.deb.  Then, to satisfy the dependencies,
+Install via sudo dpkg -i noaacap-0.7.3.deb.  Then, to satisfy the dependencies,
 run sudo apt-get -f install.
 
 CONFIGURATION
@@ -62,4 +62,4 @@ k2dls@k2dls.net with the callsign-SSID of your APRS station that is sending
 weather alerts via this program.
 
 Dan Srebnick, K2DLS
-12/05/17
+12/06/17
