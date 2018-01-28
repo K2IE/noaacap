@@ -6,7 +6,7 @@
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "0.7"
+version = "0.8"
 
 import sys
 import pytz
@@ -248,6 +248,13 @@ for i in range(0, count):
       for j in range(0, len(parms)):
          if parms[j].valueName.string == 'UGC':
             zcs = parms[j].value.string
+
+      # This handles expired messages found to contain no UGC
+      try:
+         zcs
+      except:
+         log.debug('No zcs in message')
+         continue
 
       type =  pp[bytes(Phenomena, 'utf-8')].decode('utf-8')
 
