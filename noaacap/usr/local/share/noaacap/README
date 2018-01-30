@@ -53,9 +53,8 @@ choosing.  If noaacap beacons every 2 minutes, a value of 30 would provide
 hourly resends.
 
 Logging values are 0 (quiet), 1 (informational), and 2 (debug).  Logs are
-written to the systemd journal.  You may view the logs in realtime using:
-
-     sudo journalctl -u noaacap -f
+written to the systemd journal.  You may view the logs in realtime using the
+following command: sudo journalctl -f | grep noaacap.
 
 USE
 
