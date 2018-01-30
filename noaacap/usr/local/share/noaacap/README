@@ -8,7 +8,7 @@ https://github.com/K2DLS/noaacap/releases
 
 Once you are running aprx >= 2.9, install noaacap:
 
-Install via sudo dpkg -i noaacap-0.7.3.deb.  Then, to satisfy the dependencies,
+Install via sudo dpkg -i noaacap-0.8.deb.  Then, to satisfy the dependencies,
 run sudo apt-get -f install.
 
 CONFIGURATION
@@ -53,7 +53,9 @@ choosing.  If noaacap beacons every 2 minutes, a value of 30 would provide
 hourly resends.
 
 Logging values are 0 (quiet), 1 (informational), and 2 (debug).  Logs are
-written to the systemd journal.
+written to the systemd journal.  You may view the logs in realtime using:
+
+     sudo journalctl -u noaacap -f
 
 USE
 

@@ -1,8 +1,8 @@
 noaacap changelog
 ##
 Version: 0.8
-Not Released Yet
-Fix alerts without UGC causing BEACON EXEC abnormal close
+Release: January 29, 2018
+Added added handling for expired alerts
 ##
 Version: 0.7
 Release: September 28, 2017
