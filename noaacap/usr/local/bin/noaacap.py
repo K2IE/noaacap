@@ -95,6 +95,7 @@ if r.status_code != 200:
 soup = BeautifulSoup(r.text, 'xml')
 entries = soup.find_all('entry')
 count = len(entries)
+log.debug("Entry count: " + str(count))
 
 dbfile = '/dev/shm/noaaconf.db'
 ppmap = '/usr/local/share/noaacap/ppmap.db'
@@ -115,6 +116,7 @@ def vtecparse(value):
    ProductClass, Action, Office, Phenomena, Significance, ETN, DTGroup = \
       line.split('.')
    EventBegin, EventEnd = DTGroup.split('-')
+   EventEnd = EventEnd.rstrip('/')
    return ProductClass, Action, Office, Phenomena, Significance, ETN, \
       EventBegin, EventEnd
 
@@ -164,6 +166,7 @@ def parsezcs(zcs):
 hit = 0
 for i in range(0, count):
 
+   log.debug("Processing entry: " + str(count))
    if ("no active" in entries[i].title.string):
       if os.path.isfile(dbfile):
          os.remove(dbfile)
@@ -187,10 +190,22 @@ for i in range(0, count):
       try:
          ProductClass, Action, Office, Phenomena, Significance, ETN, \
            EventBegin, EventEnd = vtecparse(VTEC['VTEC'].string)
-         if (ProductClass != "/O"):		#Loop if not operational
-            continue
       except:
          continue				#Loop if error parsing P-VTEC
+
+      if (ProductClass != "/O"):		#Loop if not operational
+         continue
+
+      # Is alert expired?
+      now = datetime.datetime.utcnow()
+      exp = datetime.datetime.strptime(EventEnd,'%y%m%dT%H%MZ')
+      log.debug('Now: ' + datetime.datetime.strftime(now,"%y-%m-%d %H:%M") + \
+               ' Exp: ' + datetime.datetime.strftime(exp,"%y-%m-%d %H:%M"))
+      if now > exp:
+         log.debug("Alert Expired")
+         continue
+      else:
+         log.debug("Alert Valid")
 
       id = bytes(str(Office + Phenomena + Significance + ETN), 'utf-8')
 
@@ -245,15 +260,16 @@ for i in range(0, count):
       soup2 = BeautifulSoup(rs.text, 'xml')
       parms = soup2.find_all('parameter')
       j = len(parms)
+      zcs = ''
       for j in range(0, len(parms)):
          if parms[j].valueName.string == 'UGC':
             zcs = parms[j].value.string
 
-      # This handles expired messages found to contain no UGC
-      try:
-         zcs
-      except:
-         log.debug('No zcs in message')
+      log.debug('Parameters follow\n' + str(parms))
+
+      # This handles messages found to contain empty UGC list
+      if zcs == '':
+         log.debug('No UGC list in message')
          continue
 
       type =  pp[bytes(Phenomena, 'utf-8')].decode('utf-8')
