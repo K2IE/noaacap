@@ -6,7 +6,7 @@
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "0.8"
+version = "0.9"
 
 import sys
 import pytz
@@ -87,7 +87,12 @@ except:
 
 url = 'https://alerts.weather.gov/cap/wwaatmget.php?x=' + myZone + '&y=0'
 
-r = requests.get(url)
+try:
+   r = requests.get(url, timeout=2)
+except requests.exceptions.Timeout:
+   log.error("Timeout exception requesting " + url)
+   ErrExit()
+
 if r.status_code != 200:
    log.error(str(r.status_code) + " " + url)
    ErrExit()
@@ -252,7 +257,12 @@ for i in range(0, count):
             t = t + chr(s+61)
 
       # Pull specific alert to get compressed UGC zones
-      rs = requests.get(entries[i].id.string)
+      try:
+         rs = requests.get(entries[i].id.string, timeout=2)
+      except requests.exceptions.Timeout:
+         log.error("Timeout exception requesting " + url)
+         ErrExit()
+
       if rs.status_code != 200:
          log.error(str(rs.status_code) + " " + rs)
          ErrExit()

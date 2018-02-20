@@ -1,0 +1,27 @@
+*** /dev/null
+--- /dev/null
+***************
+*** 9
+- version = "0.9"
+--- 9 -----
++ version = "0.8"
+***************
+*** 90,95
+- try:
+-    r = requests.get(url, timeout=2)
+- except requests.exceptions.Timeout:
+-    log.error("Timeout exception requesting " + url)
+-    ErrExit()
+- 
+--- 90 -----
++ r = requests.get(url)
+***************
+*** 260,265
+-       try:
+-          rs = requests.get(entries[i].id.string, timeout=2)
+-       except requests.exceptions.Timeout:
+-          log.error("Timeout exception requesting " + url)
+-          ErrExit()
+- 
+--- 255 -----
++       rs = requests.get(entries[i].id.string)

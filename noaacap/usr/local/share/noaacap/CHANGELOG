@@ -1,5 +1,9 @@
 noaacap changelog
 ##
+Version: 0.9
+Release: February 20, 2018
+Added timeout for non/slow response of NWS servers
+##
 Version: 0.8
 Release: January 29, 2018
 Added added handling for expired alerts
