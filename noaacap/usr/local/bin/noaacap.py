@@ -6,7 +6,7 @@
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "0.9"
+version = "0.9.1"
 
 import sys
 import pytz
@@ -29,7 +29,7 @@ if len(sys.argv) == 2 and sys.argv[1] == '-v':
    print("noaacap.py by K2DLS, version " + version + "\n")
    print("A weather alert beacon exec for aprx >= 2.9")
    print("Licensed under the BSD 2 Clause license")
-   print("Copyright 2017 by Daniel L. Srebnick\n")
+   print("Copyright 2017-2018 by Daniel L. Srebnick\n")
    sys.exit(0)
 
 # We need this function early in execution
