@@ -2,6 +2,10 @@ This software is written in python 3.4 and has been tested with aprx 2.9.x.
 If you are running a version < 2.9.0 you should first update aprx.  The current
 release of aprx may be found at http://thelifeofkenneth.com/aprx/debs/.
 
+It is also being run by N3TSZ (n3tsz@yahoo.com) at the K3PDR-3 APRS digipeater
+in Philadelphia in conjunction with Dire Wolf.  The current release of Dire
+Wolf may be found at https://github.com/wb2osz/direwolf.
+ 
 The current release of noaacap may be found at:
 
 https://github.com/K2DLS/noaacap/releases
@@ -11,7 +15,7 @@ Once you are running aprx >= 2.9, install noaacap:
 Install via sudo dpkg -i noaacap-0.9.1.deb.  Then, to satisfy the dependencies,
 run sudo apt-get -f install.
 
-CONFIGURATION
+==> APRX CONFIGURATION <==
 
 Add a beacon section similar to the following to /etc/aprx.conf:
 
@@ -34,6 +38,14 @@ aprx.log, then you likely need to add the timeout.
 
 The program will check for a new alert or update every 2 minutes, but only
 send if there is a change.
+
+==> DIRE WOLF CONFIGURATION <==
+
+Add a line similar to the following to direwolf.conf:
+
+CBEACON EVERY=2 VIA WIDE2-1 INFOCMD="/usr/local/bin/noaacap.py"
+
+==> NOAACAP CONFIGURATION <==
 
 Edit /etc/noaacap.conf:
 
@@ -63,4 +75,4 @@ k2dls@k2dls.net with the callsign-SSID of your APRS station that is sending
 weather alerts via this program.
 
 Dan Srebnick, K2DLS
-12/06/17
+08/04/18
