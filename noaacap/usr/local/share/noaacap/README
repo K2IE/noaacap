@@ -2,15 +2,17 @@ This software is written in python 3.4 and has been tested with aprx 2.9.x.
 If you are running a version < 2.9.0 you should first update aprx.  The current
 release of aprx may be found at http://thelifeofkenneth.com/aprx/debs/.
 
-It is also being run by N3TSZ (n3tsz@yahoo.com) at the K3PDR-3 APRS digipeater
-in Philadelphia in conjunction with Dire Wolf.  The current release of Dire
-Wolf may be found at https://github.com/wb2osz/direwolf.
- 
+It has also been tested by N3TSZ in conjunction with direwolf.  Version 1.3
+or higher is required.  The current release of direwolf may be installed on a
+Debian or Raspbian system via:
+
+sudo apt-get install direwolf
+
 The current release of noaacap may be found at:
 
 https://github.com/K2DLS/noaacap/releases
 
-Once you are running aprx >= 2.9, install noaacap:
+Once you are running aprx >= 2.9 or direwolf >= 1.3, install noaacap:
 
 Install via sudo dpkg -i noaacap-0.9.1.deb.  Then, to satisfy the dependencies,
 run sudo apt-get -f install.
@@ -39,7 +41,7 @@ aprx.log, then you likely need to add the timeout.
 The program will check for a new alert or update every 2 minutes, but only
 send if there is a change.
 
-==> DIRE WOLF CONFIGURATION <==
+==> DIREWOLF CONFIGURATION <==
 
 Add a line similar to the following to direwolf.conf:
 
