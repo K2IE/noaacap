@@ -6,7 +6,7 @@
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "0.9.1a"
+version = "0.9.2"
 
 import sys
 import pytz
