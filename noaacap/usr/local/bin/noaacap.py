@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 
-## Author:  Dan Srebnick, K2DLS
+## Author:  Dan Srebnick, K2IE
 ## License: BSD-2-Clause (/usr/local/share/noaacap/LICENSE)
 ## This program is called from aprx.
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "0.9.1"
+version = "0.9.1a"
 
 import sys
 import pytz
@@ -26,10 +26,10 @@ log = logging.getLogger('noaacap')
 log.addHandler(JournalHandler(SYSLOG_IDENTIFIER='noaacap'))
 
 if len(sys.argv) == 2 and sys.argv[1] == '-v':
-   print("noaacap.py by K2DLS, version " + version + "\n")
+   print("noaacap.py by K2IE, version " + version + "\n")
    print("A weather alert beacon exec for aprx >= 2.9")
    print("Licensed under the BSD 2 Clause license")
-   print("Copyright 2017-2018 by Daniel L. Srebnick\n")
+   print("Copyright 2017-2019 by Daniel L. Srebnick\n")
    sys.exit(0)
 
 # We need this function early in execution

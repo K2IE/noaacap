@@ -73,8 +73,8 @@ following command: sudo journalctl -f | grep noaacap.
 USE
 
 It would be good to hear from users of this software.  Please email
-k2dls@k2dls.net with the callsign-SSID of your APRS station that is sending
+k2ie@k2ie.net with the callsign-SSID of your APRS station that is sending
 weather alerts via this program.
 
-Dan Srebnick, K2DLS
-08/04/18
+Dan Srebnick, K2IE
+09/23/19
