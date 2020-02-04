@@ -45,7 +45,7 @@ send if there is a change.
 
 Add a line similar to the following to direwolf.conf:
 
-CBEACON EVERY=2 VIA WIDE2-1 INFOCMD="/usr/local/bin/noaacap.py"
+CBEACON EVERY=2 VIA=WIDE2-1 INFOCMD="/usr/local/bin/noaacap.py"
 
 ==> NOAACAP CONFIGURATION <==
 
