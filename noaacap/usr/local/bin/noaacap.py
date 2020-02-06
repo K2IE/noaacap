@@ -303,6 +303,29 @@ for i in range(0, count):
       message = exputc + "z," + type + "," + zcs
       log.info("Msg: " + message)
 
+      # Pull discrete zone UGC values
+      soup3 = BeautifulSoup(rs.text, 'xml')
+      parms = soup3.find_all('geocode')
+      j = len(parms)
+      zcs_discrete = ''
+      for j in range(0, len(parms)):
+         if parms[j].valueName.string == 'UGC':
+            zcs_discrete = zcs_discrete + parms[j].value.string + "\n"
+
+      # Determine if adjacent zones are in original message prior
+      # to any necessary truncation.
+
+      adjZone1True = 0
+      adjZone2True = 0
+
+      if adjZone1 != '' and adjZone1 in zcs_discrete:
+         adjZone1True = 1
+         log.debug("adjZone1 found in alert data")
+
+      if adjZone2 != '' and adjZone2 in zcs_discrete:
+         adjZone2True = 1
+         log.debug("adjZone2 found in alert data")
+
       # Make sure message does not exceed 67 chars.  If it
       # does, trim it.  Also be certain that myZone is included
       # included in the trimmed zcs.
@@ -315,10 +338,12 @@ for i in range(0, count):
          if not myZone in parsezcs(zcs):
             zcs = myZone + "-" + zcs
             message = exputc + "z," + type + "," + zcs
-         if adjZone1 not equal '':
-	    zcs = adjZone1 + "-" + zcs
-            if adjZone2 not equal '':
-               zcs = adjZone2 + "-" + zcs
+         if adjZone1True and not adjZone1 in parsezcs(zcs):
+            zcs = adjZone1 + "-" + zcs
+            message = exputc + "z," + type + "," + zcs
+         if adjZone2True and not adjZone2 in parsezcs(zcs):
+            zcs = adjZone2 + "-" + zcs
+            message = exputc + "z," + type + "," + zcs
 
       if n > 0:
          log.info("Truncated Msg: " + message)

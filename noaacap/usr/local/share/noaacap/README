@@ -10,7 +10,7 @@ sudo apt-get install direwolf
 
 The current release of noaacap may be found at:
 
-https://github.com/K2DLS/noaacap/releases
+https://github.com/K2IE/noaacap/releases
 
 Once you are running aprx >= 2.9 or direwolf >= 1.3, install noaacap:
 
@@ -68,7 +68,7 @@ hourly resends.
 
 adjZone1 and adjZone2 may be optionally specified.  If specified, those zones
 are guaranteed to be retained in any messages found for myZone that have been
-truncated because of length.
+truncated because of length.  You must specify a Zone rather than a County.
 
 Logging values are 0 (quiet), 1 (informational), and 2 (debug).  Logs are
 written to the systemd journal.  You may view the logs in realtime using the
