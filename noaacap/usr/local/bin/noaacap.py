@@ -6,7 +6,7 @@
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "0.9.2"
+version = "1.0"
 
 import sys
 import pytz
@@ -27,9 +27,9 @@ log.addHandler(JournalHandler(SYSLOG_IDENTIFIER='noaacap'))
 
 if len(sys.argv) == 2 and sys.argv[1] == '-v':
    print("noaacap.py by K2IE, version " + version + "\n")
-   print("A weather alert beacon exec for aprx >= 2.9")
+   print("A weather alert beacon exec for aprx >= 2.9 and Direwolf >= 1.3")
    print("Licensed under the BSD 2 Clause license")
-   print("Copyright 2017-2019 by Daniel L. Srebnick\n")
+   print("Copyright 2017-2020 by Daniel L. Srebnick\n")
    sys.exit(0)
 
 # We need this function early in execution
@@ -76,6 +76,16 @@ try:
 except:
    log.error("Check " + conffile + " for proper myZone value in [noaacap] section")
    ErrExit()
+
+try:
+  adjZone1 = config.get('noaacap', 'adjZone1')
+except:
+  adjZone1 = ''
+
+try:
+  adjZone2 = config.get('noaacap', 'adjZone2')
+except:
+  adjZone2 = ''
 
 try:
    myResend = int(config.get('noaacap', 'myResend'))
@@ -305,6 +315,10 @@ for i in range(0, count):
          if not myZone in parsezcs(zcs):
             zcs = myZone + "-" + zcs
             message = exputc + "z," + type + "," + zcs
+         if adjZone1 not equal '':
+	    zcs = adjZone1 + "-" + zcs
+            if adjZone2 not equal '':
+               zcs = adjZone2 + "-" + zcs
 
       if n > 0:
          log.info("Truncated Msg: " + message)

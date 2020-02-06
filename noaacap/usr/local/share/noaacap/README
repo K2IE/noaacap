@@ -66,6 +66,10 @@ myResend should be set to 0 for no message resends or to an interval of your
 choosing.  If noaacap beacons every 2 minutes, a value of 30 would provide
 hourly resends.
 
+adjZone1 and adjZone2 may be optionally specified.  If specified, those zones
+are guaranteed to be retained in any messages found for myZone that have been
+truncated because of length.
+
 Logging values are 0 (quiet), 1 (informational), and 2 (debug).  Logs are
 written to the systemd journal.  You may view the logs in realtime using the
 following command: sudo journalctl -f | grep noaacap.
@@ -77,4 +81,4 @@ k2ie@k2ie.net with the callsign-SSID of your APRS station that is sending
 weather alerts via this program.
 
 Dan Srebnick, K2IE
-09/23/19
+02/06/2020

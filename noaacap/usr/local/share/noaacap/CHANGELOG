@@ -1,5 +1,9 @@
 noaacap changelog
 ##
+Version: 1.0
+Release: February 6, 2020
+Added ability to specify up to 2 adjacent zones
+##
 Version: 0.9
 Release: February 20, 2018
 Added timeout for non/slow response of NWS servers
