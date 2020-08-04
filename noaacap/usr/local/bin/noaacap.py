@@ -213,7 +213,11 @@ for i in range(0, count):
 
       # Is alert expired?
       now = datetime.datetime.utcnow()
-      exp = datetime.datetime.strptime(EventEnd,'%y%m%dT%H%MZ')
+      # Fix exit on exp = '000000T0000Z'
+      try:
+         exp = datetime.datetime.strptime(EventEnd,'%y%m%dT%H%MZ')
+      except:
+         exp = now
       log.debug('Now: ' + datetime.datetime.strftime(now,"%y-%m-%d %H:%M") + \
                ' Exp: ' + datetime.datetime.strftime(exp,"%y-%m-%d %H:%M"))
       if now > exp:
