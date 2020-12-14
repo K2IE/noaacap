@@ -1,4 +1,4 @@
-This software is written in python 3.4 and has been tested with aprx 2.9.x.
+This software is written in python3 and has been tested with aprx 2.9.x.
 If you are running a version < 2.9.0 you should first update aprx.  The current
 release of aprx may be found at http://thelifeofkenneth.com/aprx/debs/.
 
