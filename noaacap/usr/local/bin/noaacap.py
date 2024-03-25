@@ -11,6 +11,7 @@ version = "1.0"
 import sys
 import pytz
 import datetime
+import dateutil.parser
 import string
 import requests
 from bs4 import BeautifulSoup
@@ -29,7 +30,7 @@ if len(sys.argv) == 2 and sys.argv[1] == '-v':
    print("noaacap.py by K2IE, version " + version + "\n")
    print("A weather alert beacon exec for aprx >= 2.9 and Direwolf >= 1.3")
    print("Licensed under the BSD 2 Clause license")
-   print("Copyright 2017-2020 by Daniel L. Srebnick\n")
+   print("Copyright 2017-2024 by Daniel L. Srebnick\n")
    sys.exit(0)
 
 # We need this function early in execution
@@ -95,7 +96,7 @@ except:
    log.error("or 30 (for 1h if beacon cycle-size 2m)")
    ErrExit()
 
-url = 'https://alerts.weather.gov/cap/wwaatmget.php?x=' + myZone + '&y=0'
+url = 'https://api.weather.gov/alerts/active.atom?zone=' + myZone
 
 try:
    r = requests.get(url, timeout=2)
@@ -135,53 +136,10 @@ def vtecparse(value):
    return ProductClass, Action, Office, Phenomena, Significance, ETN, \
       EventBegin, EventEnd
 
-def capchildren(children):
-   k = None
-   list = {}
-   for tag in children:
-      if tag.name == 'valueName':
-         k = tag.string
-      elif tag.name == 'value':
-         list[k] = tag.string
-   return list
-
-def parsezcs(zcs):
-   zonelist = set()
-   inprogress = 0
-   newprefix = 1
-   for z in range(0, len(zcs)):
-      if not inprogress:
-         zone = ''
-         inprogress = 1
-      if re.match('[A-Z]',zcs[z]):
-         if newprefix == 1:
-            prefix = ''
-            newprefix = 0
-         prefix = prefix + zcs[z]
-      if re.match('[0-9]',zcs[z]):
-         zone = zone + zcs[z]
-      if zcs[z] == '>':
-         zonelist.add(prefix + zone)
-         inprogress = 0
-         endzone = zcs[z+1:z+4]
-         z = z + 3
-         startzone = int(zone) + 1
-         endzone = int(endzone)
-         for y in range(startzone, endzone):
-            zonelist.add(prefix + str(y).zfill(3))
-      elif zcs[z] == '-':
-         zonelist.add(prefix + zone)
-         inprogress = 0
-         if re.match('[A-Z]',zcs[z+1]):
-            newprefix = 1
-   if inprogress:
-      zonelist.add(prefix + zone)
-   return zonelist
-
 hit = 0
 for i in range(0, count):
 
-   log.debug("Processing entry: " + str(count))
+   log.debug("Processing entry: " + str(i + 1))
    if ("no active" in entries[i].title.string):
       if os.path.isfile(dbfile):
          os.remove(dbfile)
@@ -200,26 +158,51 @@ for i in range(0, count):
 
    if (entries[i].status.string == "Actual"):
 
+      # Retrieve link for entry i
+      url = entries[i].id.string + ".cap"
+
+      try:
+         r = requests.get(url, timeout=2)
+      except requests.exceptions.Timeout:
+         log.error("Timeout exception requesting " + url)
+         ErrExit()
+
+      if r.status_code != 200:
+         log.error(str(r1.status_code) + " " + url)
+         ErrExit()
+
+      soup = BeautifulSoup(r.text, 'xml')
+
+      for j in soup.select('parameter'):
+         if (j.find('valueName').text == 'VTEC'):
+            VTEC = j.find('value').text
+
+      log.debug("VTEC String: " + VTEC)
+
       # Parse P-VTEC string and make sure this is an operational ProductClass
-      VTEC = capchildren(entries[i].parameter.children)
+
       try:
          ProductClass, Action, Office, Phenomena, Significance, ETN, \
-           EventBegin, EventEnd = vtecparse(VTEC['VTEC'].string)
+           EventBegin, EventEnd = vtecparse(VTEC)
       except:
+         log.debug("VTEC parse failed")
          continue				#Loop if error parsing P-VTEC
 
       if (ProductClass != "/O"):		#Loop if not operational
          continue
 
       # Is alert expired?
-      now = datetime.datetime.utcnow()
+      now = datetime.datetime.now(datetime.timezone.utc)
       # Fix exit on exp = '000000T0000Z'
+      exp = dateutil.parser.parse(EventEnd)
       try:
-         exp = datetime.datetime.strptime(EventEnd,'%y%m%dT%H%MZ')
+         exp = dateutil.parser.parse(EventEnd)
       except:
          exp = now
+
       log.debug('Now: ' + datetime.datetime.strftime(now,"%y-%m-%d %H:%M") + \
                ' Exp: ' + datetime.datetime.strftime(exp,"%y-%m-%d %H:%M"))
+
       if now > exp:
          log.debug("Alert Expired")
          continue
@@ -270,32 +253,22 @@ for i in range(0, count):
          elif 36 <= s <= 61:
             t = t + chr(s+61)
 
-      # Pull specific alert to get compressed UGC zones
-      try:
-         rs = requests.get(entries[i].id.string, timeout=2)
-      except requests.exceptions.Timeout:
-         log.error("Timeout exception requesting " + url)
-         ErrExit()
-
-      if rs.status_code != 200:
-         log.error(str(rs.status_code) + " " + rs)
-         ErrExit()
-
-      soup2 = BeautifulSoup(rs.text, 'xml')
-      parms = soup2.find_all('parameter')
-      j = len(parms)
       zcs = ''
-      for j in range(0, len(parms)):
-         if parms[j].valueName.string == 'UGC':
-            zcs = parms[j].value.string
-
-      log.debug('Parameters follow\n' + str(parms))
+      zcs_discrete = ''
+      for j in soup.select('area'):
+         for k in j.select('geocode'):
+            if (k.find('valueName').text == 'UGC'):
+               addzcs = k.find('value').text
+               zcs = zcs + addzcs + '-'
+               zcs_discrete = zcs_discrete + addzcs + "\n"
 
       # This handles messages found to contain empty UGC list
       if zcs == '':
          log.debug('No UGC list in message')
          continue
 
+      zcs = zcs[:-1]
+      log.debug("ZCS Value: " + zcs)
       type =  pp[bytes(Phenomena, 'utf-8')].decode('utf-8')
 
       if Action == "CAN":
@@ -306,15 +279,6 @@ for i in range(0, count):
       hit = 1
       message = exputc + "z," + type + "," + zcs
       log.info("Msg: " + message)
-
-      # Pull discrete zone UGC values
-      soup3 = BeautifulSoup(rs.text, 'xml')
-      parms = soup3.find_all('geocode')
-      j = len(parms)
-      zcs_discrete = ''
-      for j in range(0, len(parms)):
-         if parms[j].valueName.string == 'UGC':
-            zcs_discrete = zcs_discrete + parms[j].value.string + "\n"
 
       # Determine if adjacent zones are in original message prior
       # to any necessary truncation.
@@ -339,13 +303,13 @@ for i in range(0, count):
          n = zcs.rfind('-')
          zcs = zcs[0:n]
          message = exputc + "z," + type + "," + zcs
-         if not myZone in parsezcs(zcs):
+         if not myZone in zcs:
             zcs = myZone + "-" + zcs
             message = exputc + "z," + type + "," + zcs
-         if adjZone1True and not adjZone1 in parsezcs(zcs):
+         if adjZone1True and not adjZone1 in zcs:
             zcs = adjZone1 + "-" + zcs
             message = exputc + "z," + type + "," + zcs
-         if adjZone2True and not adjZone2 in parsezcs(zcs):
+         if adjZone2True and not adjZone2 in zcs:
             zcs = adjZone2 + "-" + zcs
             message = exputc + "z," + type + "," + zcs
 
@@ -353,7 +317,7 @@ for i in range(0, count):
          log.info("Truncated Msg: " + message)
 
       line = "{" + t + "00"
-      print(":NWS_" + event + ":" + message + line)
+      print(":NWS-" + event + ":" + message + line)
       if myResend > 0:
          resend[id] = bytes(str(myResend), 'utf-8')
     

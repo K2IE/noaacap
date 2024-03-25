@@ -1,5 +1,9 @@
 noaacap changelog
 ##
+Version: 1.1
+Release: March 25, 2024
+Updated to use CAP 1.2 data source
+##
 Version: 1.0
 Release: February 6, 2020
 Added ability to specify up to 2 adjacent zones
