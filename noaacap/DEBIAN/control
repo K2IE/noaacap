@@ -1,8 +1,8 @@
 Package: noaacap
-Version: 1.0.0
+Version: 1.1.0
 Section: hamradio
 Priority: extra
 Maintainer: Dan Srebnick <k2ie at k2ie.net>
 Architecture: all
-Depends: aprx (>=2.9) | direwolf (>=1.3), db-util, python3-lxml, python3-pip, python3-bs4, python3-tz, python3-bsddb3, python3-systemd
+Depends: aprx (>=2.9) | direwolf (>=1.3), db-util, python3-lxml, python3-pip, python3-bs4, python3-tz, python3-bsddb3, python3-systemd,python3-dateutil
 Description: APRS Weather Alerts beacon exec for aprx & Dire Wolf
