@@ -6,7 +6,7 @@
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "1.1"
+version = "1.1.1"
 
 import sys
 import pytz
@@ -173,6 +173,7 @@ for i in range(0, count):
 
       soup = BeautifulSoup(r.text, 'xml')
 
+      VTEC = ''
       for j in soup.select('parameter'):
          if (j.find('valueName').text == 'VTEC'):
             VTEC = j.find('value').text
@@ -194,7 +195,6 @@ for i in range(0, count):
       # Is alert expired?
       now = datetime.datetime.now(datetime.timezone.utc)
       # Fix exit on exp = '000000T0000Z'
-      exp = dateutil.parser.parse(EventEnd)
       try:
          exp = dateutil.parser.parse(EventEnd)
       except:
@@ -212,8 +212,9 @@ for i in range(0, count):
       id = bytes(str(Office + Phenomena + Significance + ETN), 'utf-8')
 
       # Do we have this alert?
-      if alerts.has_key(id):
+      if id in alerts:
          # Is the updated time unchanged?
+         log.debug('ID found in alerts.  Now compare last updated time.')
          if alerts[id].decode('utf-8') == updated:
             log.debug(id.decode('utf-8') + " " + updated + " found")
             # Is resend behavoir desired?
@@ -233,7 +234,7 @@ for i in range(0, count):
             else:
                continue
 
-      alerts[id] = updated
+      alerts.put(id, updated.encode('utf-8'))
 
       effutc = aprstime(entries[i].effective.string[0:-6],myTZ)
       exputc = aprstime(entries[i].expires.string[0:-6],myTZ)
