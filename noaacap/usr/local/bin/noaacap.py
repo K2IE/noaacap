@@ -114,6 +114,13 @@ count = len(entries)
 log.debug("Entry count: " + str(count))
 
 dbfile = '/dev/shm/noaaconf.db'
+if (count == 0):
+   log.info("Exiting - no events found")
+   if os.path.isfile(dbfile):
+      os.remove(dbfile)
+   print()
+   exit(0)
+
 ppmap = '/usr/local/share/noaacap/ppmap.db'
 
 sg = {"W":"WARN ","A":"WATCH","Y":"ADVIS","S":"STMNT","F":"4CAST",
@@ -140,19 +147,14 @@ hit = 0
 for i in range(0, count):
 
    log.debug("Processing entry: " + str(i + 1))
-   if ("no active" in entries[i].title.string):
-      if os.path.isfile(dbfile):
-         os.remove(dbfile)
-      break
-   else:
-      if i == 0:
-          alerts = db.DB()
-          alerts.open(dbfile, "Alerts", db.DB_HASH, db.DB_CREATE)
-          if myResend > 0:
-             resend = db.DB()
-             resend.open(dbfile, "Resend", db.DB_HASH, db.DB_CREATE)
-          pp = db.DB()
-          pp.open(ppmap, None, db.DB_HASH, db.DB_RDONLY)
+   if i == 0:
+       alerts = db.DB()
+       alerts.open(dbfile, "Alerts", db.DB_HASH, db.DB_CREATE)
+       if myResend > 0:
+          resend = db.DB()
+          resend.open(dbfile, "Resend", db.DB_HASH, db.DB_CREATE)
+       pp = db.DB()
+       pp.open(ppmap, None, db.DB_HASH, db.DB_RDONLY)
 
    updated = entries[i].updated.string
 
@@ -210,6 +212,8 @@ for i in range(0, count):
          log.debug("Alert Valid")
 
       id = bytes(str(Office + Phenomena + Significance + ETN), 'utf-8')
+
+      log.debug("ID: " + id.decode('utf-8'))
 
       # Do we have this alert?
       if id in alerts:
