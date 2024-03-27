@@ -6,7 +6,7 @@
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "1.1.1"
+version = "1.2"
 
 import sys
 import pytz
@@ -111,10 +111,9 @@ if r.status_code != 200:
 soup = BeautifulSoup(r.text, 'xml')
 entries = soup.find_all('entry')
 count = len(entries)
-log.debug("Entry count: " + str(count))
 
 dbfile = '/dev/shm/noaaconf.db'
-if (count == 0):
+if count == 0:
    log.info("Exiting - no events found")
    if os.path.isfile(dbfile):
       os.remove(dbfile)
@@ -143,10 +142,16 @@ def vtecparse(value):
    return ProductClass, Action, Office, Phenomena, Significance, ETN, \
       EventBegin, EventEnd
 
+def move_entry(mylist,entry_val,entry_pos):
+   z_index = mylist.index(entry_val)
+   z_value = mylist.pop(z_index)
+   mylist.insert(entry_pos,z_value)
+   return mylist
+
 hit = 0
 for i in range(0, count):
 
-   log.debug("Processing entry: " + str(i + 1))
+   log.info("Processing entry: " + str(i + 1) + " of " + str(count))
    if i == 0:
        alerts = db.DB()
        alerts.open(dbfile, "Alerts", db.DB_HASH, db.DB_CREATE)
@@ -158,7 +163,7 @@ for i in range(0, count):
 
    updated = entries[i].updated.string
 
-   if (entries[i].status.string == "Actual"):
+   if entries[i].status.string == "Actual":
 
       # Retrieve link for entry i
       url = entries[i].id.string + ".cap"
@@ -177,7 +182,7 @@ for i in range(0, count):
 
       VTEC = ''
       for j in soup.select('parameter'):
-         if (j.find('valueName').text == 'VTEC'):
+         if j.find('valueName').text == 'VTEC':
             VTEC = j.find('value').text
 
       log.debug("VTEC String: " + VTEC)
@@ -191,7 +196,7 @@ for i in range(0, count):
          log.debug("VTEC parse failed")
          continue				#Loop if error parsing P-VTEC
 
-      if (ProductClass != "/O"):		#Loop if not operational
+      if ProductClass != "/O":	 		#Loop if not operational
          continue
 
       # Is alert expired?
@@ -202,8 +207,8 @@ for i in range(0, count):
       except:
          exp = now
 
-      log.debug('Now: ' + datetime.datetime.strftime(now,"%y-%m-%d %H:%M") + \
-               ' Exp: ' + datetime.datetime.strftime(exp,"%y-%m-%d %H:%M"))
+#      log.debug('Time Now:   ' + datetime.datetime.strftime(now,"%y-%m-%d %H:%M") + '\n' + \
+#                'Expiration: ' + datetime.datetime.strftime(exp,"%y-%m-%d %H:%M"))
 
       if now > exp:
          log.debug("Alert Expired")
@@ -213,14 +218,14 @@ for i in range(0, count):
 
       id = bytes(str(Office + Phenomena + Significance + ETN), 'utf-8')
 
-      log.debug("ID: " + id.decode('utf-8'))
+#      log.debug("ID: " + id.decode('utf-8'))
 
       # Do we have this alert?
       if id in alerts:
          # Is the updated time unchanged?
-         log.debug('ID found in alerts.  Now compare last updated time.')
+#         log.debug('ID found in alerts.  Now compare last updated time.')
          if alerts[id].decode('utf-8') == updated:
-            log.debug(id.decode('utf-8') + " " + updated + " found")
+            log.debug(id.decode('utf-8') + " " + updated + " has already been sent")
             # Is resend behavoir desired?
             if myResend > 0:
 
@@ -258,19 +263,99 @@ for i in range(0, count):
          elif 36 <= s <= 61:
             t = t + chr(s+61)
 
-      zcs = ''
-      zcs_discrete = ''
+      zcs_discrete = []
       for j in soup.select('area'):
          for k in j.select('geocode'):
             if (k.find('valueName').text == 'UGC'):
                addzcs = k.find('value').text
-               zcs = zcs + addzcs + '-'
-               zcs_discrete = zcs_discrete + addzcs + "\n"
+               zcs_discrete.append(addzcs)
 
       # This handles messages found to contain empty UGC list
-      if zcs == '':
+      if zcs_discrete == []:
          log.debug('No UGC list in message')
          continue
+
+      zcs = ''
+      streak = 0
+      dupe_flag = 0
+      sorted_zcs = (sorted(zcs_discrete))
+
+      # Move myZone to first position in case of truncation
+#      z_index = sorted_zcs.index(myZone)
+#      z_value = sorted_zcs.pop(z_index)
+#      sorted_zcs.insert(0,z_value)
+
+      move_entry(sorted_zcs,myZone,0)
+
+      # Move adjacent zones, if present, after myZone
+
+      adjZone2Index = 1
+      if adjZone1 != '' and adjZone1 in sorted_zcs:
+         adjZone2Index = 2
+         move_entry(sorted_zcs,adjZone1,1)
+         log.debug("adjZone1 found in sorted zcs and moved to index 1")
+
+      if adjZone2 != '' and adjZone2 in sorted_zcs:
+         move_entry(sorted_zcs,adjZone2,adjZone2Index)
+         log.debug("adjZone2 found in sorted zcs and moved to index " + str(adjZone2Index))
+
+      k = 0
+      for j in sorted_zcs[:-1]:
+         k += 1
+         curr_item = j
+         if (k == 1):
+            zcs = curr_item
+         next_item = sorted_zcs[k]
+         curr_prefix = curr_item[0:3]
+         next_prefix = next_item[0:3]
+         curr_suffix = curr_item[3:6]
+         next_suffix = next_item[3:6]
+         i_curr_suffix = int(curr_suffix)
+         i_next_suffix = int(next_suffix)
+         i_curr_plus1 = i_curr_suffix + 1
+
+         # Prefix differs
+         if next_prefix != curr_prefix:
+            # If not on streak, print next_item
+            if streak == 0:
+               zcs = zcs + '-' + next_item
+            # Otherwise the streak is over and is printed, along with the next item
+            else:
+               streak = 0
+               streak_end = curr_suffix
+               zcs = zcs + '-' + streak_start + '>' + streak_end + "-" + next_item
+         elif i_next_suffix != i_curr_plus1:
+            # If not on a streak set dupe flag in case a streak is next
+            if streak == 0:
+               zcs = zcs + '-' + next_suffix
+               dupe_flag = 1
+            else:
+            # The streak is over
+               streak = 0
+               streak_end = curr_suffix
+               # The beginning of the streak was not previously printer
+               if dupe_flag == 0:
+                  zcs = zcs + '-' + streak_start + '>' + streak_end
+               # Don't print the start of the streak as it is a dupe
+               else:
+                  zcs = zcs + '>' + streak_end
+                  dupe_flag = 0
+         elif i_next_suffix == i_curr_plus1:
+            # Set flag when new streak detected
+            if streak == 0:
+               streak = 1
+               streak_start = curr_suffix
+               streak_end = next_suffix
+            # The streak continues
+            else:
+               streak_end == next_suffix
+         else:
+            log.error("Unexpected condition during zcs compression")
+            ErrExit()
+
+      if streak == 1:
+         streak_end = next_suffix
+         zcs = zcs + '>' + streak_end
 
       zcs = zcs[:-1]
       log.debug("ZCS Value: " + zcs)
@@ -285,50 +370,25 @@ for i in range(0, count):
       message = exputc + "z," + type + "," + zcs
       log.info("Msg: " + message)
 
-      # Determine if adjacent zones are in original message prior
-      # to any necessary truncation.
-
-      adjZone1True = 0
-      adjZone2True = 0
-
-      if adjZone1 != '' and adjZone1 in zcs_discrete:
-         adjZone1True = 1
-         log.debug("adjZone1 found in alert data")
-
-      if adjZone2 != '' and adjZone2 in zcs_discrete:
-         adjZone2True = 1
-         log.debug("adjZone2 found in alert data")
-
-      # Make sure message does not exceed 67 chars.  If it
-      # does, trim it.  Also be certain that myZone is included
-      # included in the trimmed zcs.
+      # Make sure message does not exceed 67 chars.  If it does, trim it.
 	
       n = 0
       while len(message) > 67:
          n = zcs.rfind('-')
          zcs = zcs[0:n]
          message = exputc + "z," + type + "," + zcs
-         if not myZone in zcs:
-            zcs = myZone + "-" + zcs
-            message = exputc + "z," + type + "," + zcs
-         if adjZone1True and not adjZone1 in zcs:
-            zcs = adjZone1 + "-" + zcs
-            message = exputc + "z," + type + "," + zcs
-         if adjZone2True and not adjZone2 in zcs:
-            zcs = adjZone2 + "-" + zcs
-            message = exputc + "z," + type + "," + zcs
 
       if n > 0:
          log.info("Truncated Msg: " + message)
 
       line = "{" + t + "00"
-      print(":NWS-" + event + ":" + message + line)
+      print(":NWS_" + event + ":" + message + line)
       if myResend > 0:
          resend[id] = bytes(str(myResend), 'utf-8')
     
       break
 
-if (hit == 0):
+if hit == 0:
    print()
 
 log.info("Exiting")

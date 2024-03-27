@@ -1,5 +1,9 @@
 noaacap changelog
 ##
+Version: 1.2
+Release: March 27, 2024
+Reintroduced compressed zones and other improvements
+##
 Version: 1.1
 Release: March 25, 2024
 Updated to use CAP 1.2 data source
