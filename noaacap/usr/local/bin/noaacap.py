@@ -281,14 +281,9 @@ for i in range(0, count):
       sorted_zcs = (sorted(zcs_discrete))
 
       # Move myZone to first position in case of truncation
-#      z_index = sorted_zcs.index(myZone)
-#      z_value = sorted_zcs.pop(z_index)
-#      sorted_zcs.insert(0,z_value)
-
       move_entry(sorted_zcs,myZone,0)
 
       # Move adjacent zones, if present, after myZone
-
       adjZone2Index = 1
       if adjZone1 != '' and adjZone1 in sorted_zcs:
          adjZone2Index = 2
