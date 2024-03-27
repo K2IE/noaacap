@@ -1,5 +1,9 @@
 noaacap changelog
 ##
+Version: 1.3
+Release: TBD
+Fixed truncation bug in compressed zone list
+##
 Version: 1.2
 Release: March 27, 2024
 Reintroduced compressed zones and other improvements

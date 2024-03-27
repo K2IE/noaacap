@@ -6,7 +6,7 @@
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "1.2"
+version = "1.3"
 
 import sys
 import pytz
@@ -352,7 +352,6 @@ for i in range(0, count):
          streak_end = next_suffix
          zcs = zcs + '>' + streak_end
 
-      zcs = zcs[:-1]
       log.debug("ZCS Value: " + zcs)
       type =  pp[bytes(Phenomena, 'utf-8')].decode('utf-8')
 
