@@ -64,7 +64,7 @@ characters.  You could instead use a county code if you wish.  However the
 associated zone may also be sent in, wasting characters.
 
 As an example, if you're located in Lancaster, PA, the map shows that you
-are in zone 066.  Enter PA066 for myZone.
+are in zone 066.  Enter PAZ066 for myZone.
 
 myResend should be set to 0 for no message resends or to an interval of your
 choosing.  If noaacap beacons every 2 minutes, a value of 30 would provide
