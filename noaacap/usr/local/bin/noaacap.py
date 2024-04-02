@@ -6,7 +6,7 @@
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "1.3"
+version = "1.3.1"
 
 import sys
 import pytz
@@ -199,16 +199,18 @@ for i in range(0, count):
       if ProductClass != "/O":	 		#Loop if not operational
          continue
 
+      EventEnd = "20" + EventEnd
+
       # Is alert expired?
-      now = datetime.datetime.now(datetime.timezone.utc)
+      now = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
       # Fix exit on exp = '000000T0000Z'
       try:
          exp = dateutil.parser.parse(EventEnd)
       except:
          exp = now
 
-#      log.debug('Time Now:   ' + datetime.datetime.strftime(now,"%y-%m-%d %H:%M") + '\n' + \
-#                'Expiration: ' + datetime.datetime.strftime(exp,"%y-%m-%d %H:%M"))
+#      log.debug('Time Now:   ' + datetime.datetime.strftime(now,"%y-%m-%d %H:%M")) 
+#      log.debug('Expiration: ' + datetime.datetime.strftime(exp,"%y-%m-%d %H:%M"))
 
       if now > exp:
          log.debug("Alert Expired")
