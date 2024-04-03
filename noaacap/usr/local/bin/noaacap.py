@@ -6,7 +6,7 @@
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "1.3.1"
+version = "1.4.0"
 
 import sys
 import pytz
@@ -278,8 +278,6 @@ for i in range(0, count):
          continue
 
       zcs = ''
-      streak = 0
-      dupe_flag = 0
       sorted_zcs = (sorted(zcs_discrete))
 
       # Move myZone to first position in case of truncation
@@ -296,63 +294,57 @@ for i in range(0, count):
          move_entry(sorted_zcs,adjZone2,adjZone2Index)
          log.debug("adjZone2 found in sorted zcs and moved to index " + str(adjZone2Index))
 
+      prev_item   = ''
+      prev_prefix = ''
+      prev_suffix = ''
+      next_item   = ''
+#      next_prefix = ''
+      next_suffix = ''
+
       k = 0
-      for j in sorted_zcs[:-1]:
+      for j in sorted_zcs:
          k += 1
          curr_item = j
-         if (k == 1):
-            zcs = curr_item
-         next_item = sorted_zcs[k]
+
+         try: 
+            next_item = sorted_zcs[k]
+         except:
+            next_item = ''
+         if next_item != '':
+#            next_prefix = next_item[0:3]
+            next_suffix = next_item[3:6]
+            i_next_suffix = int(next_suffix)
+
          curr_prefix = curr_item[0:3]
-         next_prefix = next_item[0:3]
          curr_suffix = curr_item[3:6]
-         next_suffix = next_item[3:6]
          i_curr_suffix = int(curr_suffix)
-         i_next_suffix = int(next_suffix)
          i_curr_plus1 = i_curr_suffix + 1
 
-         # Prefix differs
-         if next_prefix != curr_prefix:
-            # If not on streak, print next_item
-            if streak == 0:
-               zcs = zcs + '-' + next_item
-            # Otherwise the streak is over and is printed, along with the next item
-            else:
-               streak = 0
-               streak_end = curr_suffix
-               zcs = zcs + '-' + streak_start + '>' + streak_end + "-" + next_item
-         elif i_next_suffix != i_curr_plus1:
-            # If not on a streak set dupe flag in case a streak is next
-            if streak == 0:
-               zcs = zcs + '-' + next_suffix
-               dupe_flag = 1
-            else:
-            # The streak is over
-               streak = 0
-               streak_end = curr_suffix
-               # The beginning of the streak was not previously printer
-               if dupe_flag == 0:
-                  zcs = zcs + '-' + streak_start + '>' + streak_end
-               # Don't print the start of the streak as it is a dupe
-               else:
-                  zcs = zcs + '>' + streak_end
-                  dupe_flag = 0
-         elif i_next_suffix == i_curr_plus1:
-            # Set flag when new streak detected
-            if streak == 0:
-               streak = 1
-               streak_start = curr_suffix
-               streak_end = next_suffix
-            # The streak continues
-            else:
-               streak_end == next_suffix
+         # Always print entire first item
+         if k == 1: 
+            zcs = curr_item
+         # Did prefix change?
+         elif prev_prefix != curr_prefix:
+            zcs = zcs + "-" + curr_item
+         # Current suffix is 1 more than previous 
+         elif i_prev_plus1 == i_curr_suffix:
+            if i_next_suffix != i_curr_plus1:
+               zcs = zcs + ">" + curr_suffix
+         # Current suffix is not 1 more than previous
+         elif i_prev_plus1  != i_curr_suffix:
+            zcs = zcs + "-" + curr_suffix
          else:
             log.error("Unexpected condition during zcs compression")
             ErrExit()
 
-      if streak == 1:
-         streak_end = next_suffix
-         zcs = zcs + '>' + streak_end
+         # For debugging only
+         # print (zcs)
+         
+         prev_item     = curr_item
+         prev_prefix   = curr_prefix
+         prev_suffix   = curr_suffix
+         i_prev_suffix = int(prev_suffix)
+         i_prev_plus1  = i_prev_suffix + 1
 
       log.debug("ZCS Value: " + zcs)
       type =  pp[bytes(Phenomena, 'utf-8')].decode('utf-8')

@@ -1,3 +1,6 @@
+The current release of noaacap is 1.4.0.  If you are running older than this
+version, please update before asking for support.
+
 This software is written in python3 and has been tested with aprx 2.9.x.
 If you are running a version < 2.9.0 you should first update aprx.  The current
 release of aprx may be found at http://thelifeofkenneth.com/aprx/debs/.
@@ -14,7 +17,7 @@ https://github.com/K2IE/noaacap/releases
 
 Once you are running aprx >= 2.9 or direwolf >= 1.3, install noaacap:
 
-Install via sudo dpkg -i noaacap-1.3.deb.  Then, to satisfy the dependencies,
+Install via sudo dpkg -i noaacap-1.4.deb.  Then, to satisfy the dependencies,
 run sudo apt-get -f install.
 
 ==> APRX CONFIGURATION <==
@@ -61,7 +64,7 @@ myZone should be set to your zone code.  A list of zone codes may be found
 at https://www.weather.gov/pimar/PubZone.  Only list one zone.  The program
 will send the alert for all affected zones that will fit in the allocated 67
 characters.  You could instead use a county code if you wish.  However the
-associated zone may also be sent in, wasting characters.
+associated zone may also be sent, wasting characters.
 
 As an example, if you're located in Lancaster, PA, the map shows that you
 are in zone 066.  Enter PAZ066 for myZone.
@@ -86,4 +89,4 @@ weather alerts via this program.
 
 Dan Srebnick, K2IE
 02/06/2020
-Updated 03/27/2024
+Updated 04/03/2024
