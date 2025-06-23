@@ -6,7 +6,7 @@
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "1.4.0"
+version = "1.4.2"
 
 import sys
 import pytz
@@ -281,7 +281,9 @@ for i in range(0, count):
       sorted_zcs = (sorted(zcs_discrete))
 
       # Move myZone to first position in case of truncation
-      move_entry(sorted_zcs,myZone,0)
+      if myZone in sorted_zcs:
+         move_entry(sorted_zcs,myZone,0)
+         log.debug("myZone found in sorted zcs and moved to index 0")
 
       # Move adjacent zones, if present, after myZone
       adjZone2Index = 1
