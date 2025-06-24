@@ -22,6 +22,7 @@ import configparser
 import re
 import logging
 from systemd.journal import JournalHandler
+import argparse
 
 log = logging.getLogger('noaacap')
 log.addHandler(JournalHandler(SYSLOG_IDENTIFIER='noaacap'))
@@ -33,13 +34,23 @@ if len(sys.argv) == 2 and sys.argv[1] == '-v':
    print("Copyright 2017-2024 by Daniel L. Srebnick\n")
    sys.exit(0)
 
+# Command-line argument parsing
+parser = argparse.ArgumentParser(description="noaacap.py - NOAA CAP Parser for APRS.")
+parser.add_argument('--config', '-c',
+                    help='Path to the configuration file (default: /etc/noaacap.conf)',
+                    default='/etc/noaacap.conf')
+parser.add_argument('--dbfile', '-d',
+                    help='Path to the database file (default: /dev/shm/noaaconf.db)',
+                    default='/dev/shm/noaaconf.db')
+args = parser.parse_args()
+
 # We need this function early in execution
 def ErrExit():
    log.error("Exiting")
    print()
    exit(0)
 
-conffile = '/etc/noaacap.conf'
+conffile = args.config
 
 if not os.path.isfile(conffile):
    log.error(conffile + " not found")
@@ -112,7 +123,7 @@ soup = BeautifulSoup(r.text, 'xml')
 entries = soup.find_all('entry')
 count = len(entries)
 
-dbfile = '/dev/shm/noaaconf.db'
+dbfile = args.dbfile
 if count == 0:
    log.info("Exiting - no events found")
    if os.path.isfile(dbfile):
@@ -194,9 +205,9 @@ for i in range(0, count):
            EventBegin, EventEnd = vtecparse(VTEC)
       except:
          log.debug("VTEC parse failed")
-         continue				#Loop if error parsing P-VTEC
+         continue                               #Loop if error parsing P-VTEC
 
-      if ProductClass != "/O":	 		#Loop if not operational
+      if ProductClass != "/O":                  #Loop if not operational
          continue
 
       EventEnd = "20" + EventEnd
@@ -209,7 +220,7 @@ for i in range(0, count):
       except:
          exp = now
 
-#      log.debug('Time Now:   ' + datetime.datetime.strftime(now,"%y-%m-%d %H:%M")) 
+#      log.debug('Time Now:   ' + datetime.datetime.strftime(now,"%y-%m-%d %H:%M"))
 #      log.debug('Expiration: ' + datetime.datetime.strftime(exp,"%y-%m-%d %H:%M"))
 
       if now > exp:
@@ -308,7 +319,7 @@ for i in range(0, count):
          k += 1
          curr_item = j
 
-         try: 
+         try:
             next_item = sorted_zcs[k]
          except:
             next_item = ''
@@ -323,12 +334,12 @@ for i in range(0, count):
          i_curr_plus1 = i_curr_suffix + 1
 
          # Always print entire first item
-         if k == 1: 
+         if k == 1:
             zcs = curr_item
          # Did prefix change?
          elif prev_prefix != curr_prefix:
             zcs = zcs + "-" + curr_item
-         # Current suffix is 1 more than previous 
+         # Current suffix is 1 more than previous
          elif i_prev_plus1 == i_curr_suffix:
             if i_next_suffix != i_curr_plus1:
                zcs = zcs + ">" + curr_suffix
@@ -341,7 +352,7 @@ for i in range(0, count):
 
          # For debugging only
          # print (zcs)
-         
+
          prev_item     = curr_item
          prev_prefix   = curr_prefix
          prev_suffix   = curr_suffix
@@ -361,7 +372,7 @@ for i in range(0, count):
       log.info("Msg: " + message)
 
       # Make sure message does not exceed 67 chars.  If it does, trim it.
-	
+
       n = 0
       while len(message) > 67:
          n = zcs.rfind('-')
@@ -375,7 +386,7 @@ for i in range(0, count):
       print(":NWS_" + event + ":" + message + line)
       if myResend > 0:
          resend[id] = bytes(str(myResend), 'utf-8')
-    
+
       break
 
 if hit == 0:
