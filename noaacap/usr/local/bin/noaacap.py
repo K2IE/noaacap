@@ -6,7 +6,7 @@
 ##
 ## See /usr/local/share/noaacap/CHANGELOG for change history
 ##
-version = "1.4.2"
+version = "1.5"
 
 import sys
 import pytz
@@ -31,11 +31,11 @@ if len(sys.argv) == 2 and sys.argv[1] == '-v':
    print("noaacap.py by K2IE, version " + version + "\n")
    print("A weather alert beacon exec for aprx >= 2.9 and Direwolf >= 1.3")
    print("Licensed under the BSD 2 Clause license")
-   print("Copyright 2017-2024 by Daniel L. Srebnick\n")
+   print("Copyright 2017-2025 by Daniel L. Srebnick\n")
    sys.exit(0)
 
 # Command-line argument parsing
-parser = argparse.ArgumentParser(description="noaacap.py - NOAA CAP Parser for APRS.")
+parser = argparse.ArgumentParser(description="noaacap.py - APRS Weather Alerts beacon exec for aprx & Dire Wolf")
 parser.add_argument('--config', '-c',
                     help='Path to the configuration file (default: /etc/noaacap.conf)',
                     default='/etc/noaacap.conf')

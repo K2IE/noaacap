@@ -1,5 +1,5 @@
-The current release of noaacap is 1.4.2.  If you are running older than this
-version, please update before asking for support.
+The current release of noaacap is 1.5.  If you are running an older version
+than this, please update before asking for support.
 
 This software is written in python3 and has been tested with aprx 2.9.x.
 If you are running a version < 2.9.0 you should first update aprx.  The current
@@ -89,4 +89,4 @@ weather alerts via this program.
 
 Dan Srebnick, K2IE
 02/06/2020
-Updated 06/23/2025
+Updated 06/25/2025
