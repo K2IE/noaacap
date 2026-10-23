@@ -1,5 +1,9 @@
 noaacap changelog
 ##
+Version: 1.5.1
+Releae: October 23. 2026
+Update documentation for multiple instances under aprx
+##
 Version: 1.5
 Release: June 25, 2025
 Add command argument parsing
